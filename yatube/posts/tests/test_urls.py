@@ -78,7 +78,7 @@ class URLsTest(TestCase):
                 response = self.guest_client.get(url)
                 self.assertEqual(response.status_code, status_code)
 
-    def test_redirect_launches_unauth_user(self):
+    def test_redirect_happens_unauth_user(self):
         urls_and_expected_redirect_pages = {
             '/new/': '/auth/login/?next=/new/',
 
@@ -91,7 +91,7 @@ class URLsTest(TestCase):
                 response = self.guest_client.get(url, follow=True)
                 self.assertRedirects(response, redirect_page)
 
-    def test_redirect_launches_auth_user(self):
+    def test_redirect_happens_auth_user(self):
         response = self.authorized_client.get(
             f'/{self.post_author.username}/{self.post.id}/edit/', follow=True
         )

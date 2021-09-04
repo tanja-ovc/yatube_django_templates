@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, render
+# from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post
@@ -11,6 +12,7 @@ from .models import Follow, Group, Post
 User = get_user_model()
 
 
+# @cache_page(20)
 def index(request):
     posts_list = Post.objects.all()
     paginator = Paginator(posts_list, settings.POSTS_PER_PAGE)
@@ -37,12 +39,27 @@ def profile(request, username):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
 
-    following = Follow.objects.filter(user=request.user,
-                                      author=a_user).exists()
+    context = {
+            'a_user': a_user,
+            'page': page,
+            'profile_view': True,
+        }
+    
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=a_user
+        ).exists()
 
-    return render(request, 'profile.html',
-                  {'a_user': a_user, 'page': page, 'profile_view': True,
-                   'following': following})
+        context['following'] = following
+
+    if request.user.username == username:
+        self_following = True
+        editing_permitted = True
+
+        context['self_following'] = self_following
+        context['editing_permitted'] = editing_permitted
+
+    return render(request, 'profile.html', context)
 
 
 @login_required
@@ -51,12 +68,22 @@ def post_view(request, username, post_id):
     a_post = get_object_or_404(Post, author__username=username, id=post_id)
     form = CommentForm()
     comments = a_post.comments.all()
+    
+    context = {
+        'a_post': a_post,
+        'post_view': True,
+        'form': form,
+        'comments': comments,
+        'username': username,
+        'post_id': post_id,
+        'a_user': a_user,
+    }
 
-    return render(request, 'post.html', {'a_post': a_post, 'post_view': True,
-                                         'form': form, 'comments': comments,
-                                         'username': username,
-                                         'post_id': post_id,
-                                         'a_user': a_user})
+    if request.user.username == username:
+        editing_permitted = True
+        context['editing_permitted'] = editing_permitted
+
+    return render(request, 'post.html', context)
 
 
 @login_required
@@ -136,18 +163,11 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
+
     author_to_be_followed = get_object_or_404(User, username=username)
-    Follow.objects.create(user=request.user, author=author_to_be_followed)
+    Follow.objects.get_or_create(user=request.user, author=author_to_be_followed)
 
     return redirect('profile', username=username)
-
-    # if request.user.username == username:
-    #     return  # что-то о том, что на самого себя нельзя подписаться
-
-    # Во view-функцию добавьте проверку: подписан ли текущий пользователь
-    # на автора, страницу которого он просматривает; присвойте результат
-    # проверки переменной following и передайте её в в словаре контекста
-    # view-функции profile().
 
 
 @login_required
