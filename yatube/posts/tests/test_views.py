@@ -4,7 +4,7 @@ import tempfile
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
+# from django.core.cache import cache - cache test in progress
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -391,16 +391,9 @@ class TestCache(TestCase):
         # cached_post = cache.get('index_page', 'Failed: Cache is empty')
 
         # self.assertEqual(cached_post, latest_post)
-        
-        # print(latest_post_homepage)
-        # print(cached_post)
 
-        # cached_post = cache.get('index_page')
-
-        # response_2 = self.guest_client.get(reverse('index'))
-        # posts_list_homepage = response_2.context['page'].object_list
-        # latest_post_homepage = posts_list_homepage.first()
-        # self.assertEqual(cached_post, None)
+        # пока не работает кэширование - кэш пуст по результатам теста
+        # кэширование оформлено в шаблоне index.html
 
         # cache.clear()
 
