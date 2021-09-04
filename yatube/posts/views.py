@@ -28,7 +28,7 @@ def group_posts(request, slug):
     page_obj = paginator.get_page(page_number)
 
     return render(request,
-                  'group.html',
+                  'group_list.html',
                   {'group': group, 'page_obj': page_obj})
 
 
@@ -93,7 +93,7 @@ def new_post(request):
             a_new_post = form.save(commit=False)
             a_new_post.author = request.user
             a_new_post.save()
-            return redirect('index')
+            return redirect('profile', username=request.user.username)
 
         return render(request, 'new_post.html', {'form': form})
 
@@ -159,9 +159,12 @@ def follow_index(request):
 def profile_follow(request, username):
 
     author_to_be_followed = get_object_or_404(User, username=username)
-    Follow.objects.get_or_create(
+    subscription = Follow.objects.filter(
         user=request.user, author=author_to_be_followed
     )
+    if subscription.exists() is False:
+        Follow.objects.create(user=request.user, author=author_to_be_followed)
+        return redirect('profile', username=username)
 
     return redirect('profile', username=username)
 

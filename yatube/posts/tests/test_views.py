@@ -81,7 +81,7 @@ class ViewsTest(TestCase):
         views_names_and_corresponding_templates = {
             reverse('index'): 'index.html',
             reverse('group_posts',
-                    kwargs={'slug': self.group.slug}): 'group.html',
+                    kwargs={'slug': self.group.slug}): 'group_list.html',
             reverse('new_post'): 'new_post.html',
 
             reverse(

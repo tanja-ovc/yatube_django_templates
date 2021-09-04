@@ -102,7 +102,7 @@ class URLsTest(TestCase):
     def test_urls_correct_templates_usage(self):
         urls_and_corresponding_templates = {
             '/': 'index.html',
-            f'/group/{self.group.slug}/': 'group.html',
+            f'/group/{self.group.slug}/': 'group_list.html',
             '/create/': 'new_post.html',
 
             f'/posts/{self.post.id}/edit/':
