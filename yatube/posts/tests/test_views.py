@@ -85,8 +85,7 @@ class ViewsTest(TestCase):
             reverse('new_post'): 'new_post.html',
 
             reverse(
-                'post_edit', kwargs={'username': self.post_author.username,
-                                     'post_id': self.post.id}
+                'post_edit', kwargs={'post_id': self.post.id}
             ): 'new_post.html',
 
             reverse(
@@ -94,8 +93,7 @@ class ViewsTest(TestCase):
             ): 'profile.html',
 
             reverse(
-                'post', kwargs={'username': self.post_author.username,
-                                'post_id': self.post.id}
+                'post', kwargs={'post_id': self.post.id}
             ): 'post.html',
         }
 
@@ -136,7 +134,7 @@ class ViewsTest(TestCase):
         response = self.authorized_client.get(reverse('index'))
         # Взяли первый элемент из списка и проверили, что его содержание
         # совпадает с ожидаемым
-        first_object = response.context['page'][0]
+        first_object = response.context['page_obj'][0]
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_image_0 = first_object.image
@@ -156,7 +154,7 @@ class ViewsTest(TestCase):
         )
         self.assertEqual(response.context['group'].slug, self.group.slug)
 
-        first_object = response.context['page'][0]
+        first_object = response.context['page_obj'][0]
         self.assertEqual(first_object.image, self.post.image)
 
     # Проверка словаря контекста страницы редактирования поста
@@ -192,7 +190,7 @@ class ViewsTest(TestCase):
         )
         # Взяли первый элемент из списка и проверили, что его содержание
         # совпадает с ожидаемым
-        first_object = response.context['page'][0]
+        first_object = response.context['page_obj'][0]
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_image_0 = first_object.image
@@ -205,9 +203,7 @@ class ViewsTest(TestCase):
     def test_one_post_page_correct_context_usage(self):
         """Шаблон post.html сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse('post', kwargs={
-                'username': self.post_author.username, 'post_id': self.post.id
-            })
+            reverse('post', kwargs={'post_id': self.post.id})
         )
         self.assertEqual(response.context['a_post'].text, self.post.text)
         self.assertEqual(response.context['a_post'].author.username,
@@ -261,14 +257,14 @@ class PaginatorViewsTest(TestCase):
         for url_name_reverse, posts_amount in self.first_page.items():
             response = self.guest_client.get(url_name_reverse)
             self.assertEqual(
-                len(response.context['page'].object_list), posts_amount
+                len(response.context['page_obj'].object_list), posts_amount
             )
 
     def test_second_page_contains_three_records(self):
         for url_name_reverse, posts_amount in self.second_page.items():
             response = self.guest_client.get(url_name_reverse + '?page=2')
             self.assertEqual(
-                len(response.context['page'].object_list), posts_amount
+                len(response.context['page_obj'].object_list), posts_amount
             )
 
 
@@ -307,7 +303,7 @@ class TestPostAdded(TestCase):
 
     def test_post_added_to_homepage(self):
         response = self.guest_client.get(reverse('index'))
-        posts_list_homepage = response.context['page'].object_list
+        posts_list_homepage = response.context['page_obj'].object_list
 
         self.assertIn(self.added_post, posts_list_homepage)
 
@@ -315,7 +311,7 @@ class TestPostAdded(TestCase):
         response = self.guest_client.get(
             reverse('group_posts', kwargs={'slug': self.group1.slug})
         )
-        latest_post_group1 = response.context['page'].object_list[0]
+        latest_post_group1 = response.context['page_obj'].object_list[0]
 
         self.assertEqual(latest_post_group1.text, self.added_post.text)
         self.assertEqual(latest_post_group1.group, self.added_post.group)
@@ -324,7 +320,7 @@ class TestPostAdded(TestCase):
         response = self.guest_client.get(
             reverse('group_posts', kwargs={'slug': self.group2.slug})
         )
-        latest_post_group2 = response.context['page'].object_list[0]
+        latest_post_group2 = response.context['page_obj'].object_list[0]
 
         self.assertNotEqual(latest_post_group2.text, self.added_post.text)
         self.assertNotEqual(latest_post_group2.group, self.added_post.group)
@@ -358,7 +354,7 @@ class TestCommentsAdded(TestCase):
 
     def test_comment_added_to_post(self):
         response = self.authorized_client.get(
-            f'/{self.user_post_author.username}/{self.post.id}/'
+            f'/posts/{self.post.id}/'
         )
         added_comments = response.context['comments'][0]
 

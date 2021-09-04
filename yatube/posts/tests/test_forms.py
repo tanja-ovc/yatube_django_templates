@@ -109,16 +109,14 @@ class PostCreateFormTests(TestCase):
 
         response = self.authorized_author.post(
             reverse(
-                'post_edit', kwargs={'username': self.post_author.username,
-                                     'post_id': self.post.id}
+                'post_edit', kwargs={'post_id': self.post.id}
             ),
             data=self.form_data_editing_post,
             follow=True
         )
         self.assertRedirects(
             response, reverse(
-                'post', kwargs={'username': self.post_author.username,
-                                'post_id': self.post.id}
+                'post', kwargs={'post_id': self.post.id}
             )
         )
         self.assertEqual(Post.objects.count(), posts_amount)

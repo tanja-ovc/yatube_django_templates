@@ -37,7 +37,7 @@
           
           <form method="post"
                 action="{% if editing %}
-                          {% url 'post_edit' username post_id %}
+                          {% url 'post_edit' post_id %}
                         {% else %}
                           {% url 'new_post' %}
                         {% endif %}"

@@ -15,9 +15,9 @@ def index(request):
     posts_list = Post.objects.all()
     paginator = Paginator(posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'index.html', {'page': page})
+    return render(request, 'index.html', {'page_obj': page_obj})
 
 
 def group_posts(request, slug):
@@ -25,9 +25,11 @@ def group_posts(request, slug):
     group_posts_list = group.posts.all()
     paginator = Paginator(group_posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'group.html', {'group': group, 'page': page})
+    return render(request,
+                  'group.html',
+                  {'group': group, 'page_obj': page_obj})
 
 
 def profile(request, username):
@@ -39,7 +41,7 @@ def profile(request, username):
 
     context = {
         'a_user': a_user,
-        'page': page,
+        'page_obj': page,
         'profile_view': True,
     }
 
@@ -61,23 +63,21 @@ def profile(request, username):
 
 
 @login_required
-def post_view(request, username, post_id):
-    a_user = get_object_or_404(User, username=username)
-    a_post = get_object_or_404(Post, author__username=username, id=post_id)
+def post_view(request, post_id):
+    a_post = get_object_or_404(Post, id=post_id)
     form = CommentForm()
     comments = a_post.comments.all()
-
+    a_user = a_post.author
     context = {
         'a_post': a_post,
         'post_view': True,
         'form': form,
         'comments': comments,
-        'username': username,
         'post_id': post_id,
         'a_user': a_user,
     }
 
-    if request.user.username == username:
+    if request.user.username == a_post.author.username:
         editing_permitted = True
         context['editing_permitted'] = editing_permitted
 
@@ -102,14 +102,12 @@ def new_post(request):
 
 
 @login_required
-def post_edit(request, username, post_id):
+def post_edit(request, post_id):
 
-    post_to_be_edited = get_object_or_404(
-        Post, author__username=username, id=post_id
-    )
+    post_to_be_edited = get_object_or_404(Post, id=post_id)
 
     if request.user != post_to_be_edited.author:
-        return redirect('post', username=username, post_id=post_id)
+        return redirect('post', post_id=post_id)
 
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
@@ -117,22 +115,20 @@ def post_edit(request, username, post_id):
 
     if form.is_valid():
         form.save()
-        return redirect('post', username=username, post_id=post_id)
+        return redirect('post', post_id=post_id)
 
     return render(
         request,
         'new_post.html',
         {'form': form, 'editing': True,
-         'username': username, 'post_id': post_id}
+         'post_id': post_id}
     )
 
 
 @login_required
-def add_comment(request, username, post_id):
+def add_comment(request, post_id):
 
-    post_to_be_commented = get_object_or_404(
-        Post, author__username=username, id=post_id
-    )
+    post_to_be_commented = get_object_or_404(Post, id=post_id)
 
     form = CommentForm(request.POST or None)
 
@@ -142,7 +138,7 @@ def add_comment(request, username, post_id):
         comment.post = post_to_be_commented
         comment.save()
 
-    return redirect('post', username=username, post_id=post_id)
+    return redirect('post', post_id=post_id)
 
 
 @login_required

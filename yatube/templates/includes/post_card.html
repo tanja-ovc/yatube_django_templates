@@ -2,7 +2,7 @@
     <div class="card-body">
       <p class="card-text">
         <!-- Ссылка на страницу автора в атрибуте href; username автора в тексте ссылки -->
-        <a href="{% url 'profile' username=a_post.author.username %}">
+        <a href="{% url 'profile' a_post.author.username %}">
           <strong class="d-block text-gray-dark">
             @{{ a_post.author.username }}
           </strong>   
@@ -18,14 +18,14 @@
         <div class="btn-group ">
 
           <a class="btn btn-sm text-muted"
-             href="{% url 'post' username=a_post.author.username post_id=a_post.id %}"
+             href="{% url 'post' a_post.id %}"
              role="button">
             Посмотреть пост
           </a>
 
           <!-- Ссылка на страницу записи в атрибуте href-->
           <a class="btn btn-sm text-muted" 
-             href="{%  url 'post' username=a_post.author.username post_id=a_post.id %}" 
+             href="{%  url 'post' a_post.id %}" 
              role="button">
             Добавить комментарий
           </a>
@@ -34,7 +34,7 @@
             Эту ссылку вы подключите в финальном задании спринта -->
           {% if editing_permitted %}
           <a class="btn btn-sm text-muted"
-             href="{% url 'post_edit' username=a_post.author.username post_id=a_post.id %}"
+             href="{% url 'post_edit' a_post.id %}"
              role="button">
             Редактировать
           </a>

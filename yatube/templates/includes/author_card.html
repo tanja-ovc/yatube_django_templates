@@ -20,8 +20,16 @@
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <div class="h6 text-muted">
-          Подписчиков: {{ a_user.following.count }} <br>
-          Подписан: {{ a_user.follower.count }}
+          Подписчиков: {% if post_view %}
+                         {{ a_post.author.following.count }}
+                       {% elif profile_view %}
+                         {{ a_user.following.count }}
+                       {% endif %}<br>
+          Подписан: {% if post_view %}
+                      {{ a_post.author.follower.count }}
+                    {% elif profile_view %}
+                      {{ a_user.follower.count }}
+                    {% endif %}
         </div>
       </li>
       <li class="list-group-item">
