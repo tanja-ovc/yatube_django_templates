@@ -8,7 +8,10 @@
       <div class="col-md-9">
       <!-- Пост -->
         {% include 'includes/post_card.html' %}
-        {% include 'includes/add_comment_card.html' %}
+
+        {% if authenticated_user %}
+          {% include 'includes/add_comment_card.html' %}
+        {% endif %}
       </div>
     </div>
   </main>

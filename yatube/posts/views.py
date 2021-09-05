@@ -49,8 +49,10 @@ def profile(request, username):
         following = Follow.objects.filter(
             user=request.user, author=a_user
         ).exists()
+        authenticated_user = True
 
         context['following'] = following
+        context['authenticated_user'] = authenticated_user
 
     if request.user.username == username:
         self_following = True
@@ -62,7 +64,6 @@ def profile(request, username):
     return render(request, 'profile.html', context)
 
 
-@login_required
 def post_view(request, post_id):
     a_post = get_object_or_404(Post, id=post_id)
     form = CommentForm()
@@ -77,8 +78,20 @@ def post_view(request, post_id):
         'a_user': a_user,
     }
 
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=a_user
+        ).exists()
+        authenticated_user = True
+
+        context['following'] = following
+        context['authenticated_user'] = authenticated_user
+
     if request.user.username == a_post.author.username:
+        self_following = True
         editing_permitted = True
+
+        context['self_following'] = self_following
         context['editing_permitted'] = editing_permitted
 
     return render(request, 'post.html', context)
@@ -148,9 +161,9 @@ def follow_index(request):
     )
     paginator = Paginator(followed_posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
 
-    context = {'page': page}
+    context = {'page_obj': page_obj}
 
     return render(request, 'posts/follow.html', context)
 
@@ -159,11 +172,11 @@ def follow_index(request):
 def profile_follow(request, username):
 
     author_to_be_followed = get_object_or_404(User, username=username)
-    subscription = Follow.objects.filter(
-        user=request.user, author=author_to_be_followed
-    )
-    if subscription.exists() is False:
-        Follow.objects.create(user=request.user, author=author_to_be_followed)
+
+    if request.user.username != username:
+        Follow.objects.get_or_create(
+            user=request.user, author=author_to_be_followed
+        )
         return redirect('profile', username=username)
 
     return redirect('profile', username=username)

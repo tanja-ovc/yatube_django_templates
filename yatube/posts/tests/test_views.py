@@ -4,7 +4,7 @@ import tempfile
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
-# from django.core.cache import cache - cache test in progress
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -377,27 +377,19 @@ class TestCache(TestCase):
         self.guest_client = Client()
 
     def test_cache(self):
-        # в процессе написания
-        pass
+        response_1 = self.guest_client.get(reverse('index'))
+        latest_post = response_1.context['page_obj'][0]
+        self.assertEqual(latest_post, self.post)
 
-        # response = self.guest_client.get(reverse('index'))
-        # latest_post = response.context['page'][0]
-        # self.assertEqual(latest_post, self.post)
+        latest_post.delete()
 
-        # cached_post = cache.get('index_page', 'Failed: Cache is empty')
+        response_2 = self.guest_client.get(reverse('index'))
+        self.assertEqual(response_1.content, response_2.content)
 
-        # self.assertEqual(cached_post, latest_post)
+        cache.clear()
 
-        # пока не работает кэширование - кэш пуст по результатам теста
-        # кэширование оформлено в шаблоне index.html
-
-        # cache.clear()
-
-        # response_cache_cleared = self.guest_client.get(reverse('index'))
-        # self.assertNotIn(
-        #     str.encode(
-        #         f'{cached_post}'), response_cache_cleared.content
-        # )
+        response_3 = self.guest_client.get(reverse('index'))
+        self.assertNotEqual(response_2.content, response_3.content)
 
 
 class Test404(TestCase):
@@ -424,10 +416,6 @@ class TestFollow(TestCase):
 
         cls.not_a_follower = User.objects.create_user('i_am_not_subscribed')
 
-        cls.subscription = Follow.objects.create(
-            user=cls.follower, author=cls.author_to_be_followed
-        )
-
         cls.post = Post.objects.create(
             text='Текст поста автора, на которого подписаны.',
             author=cls.author_to_be_followed,
@@ -444,34 +432,72 @@ class TestFollow(TestCase):
         self.authorized_not_a_follower = Client()
         self.authorized_not_a_follower.force_login(self.not_a_follower)
 
-        self.subscription = TestFollow.subscription
         self.post = TestFollow.post
 
-    def test_follow_and_unfollow(self):
-        Follow.objects.create(
+    def test_following_possible_only_once(self):
+
+        subscription = Follow.objects.filter(
             user=self.follower, author=self.author_to_be_followed
         )
-        self.assertEqual(
-            self.subscription, self.author_to_be_followed.following.first()
+        self.assertEqual(subscription.count(), 0)
+
+        self.authorized_follower.get(
+            reverse(
+                'profile_follow',
+                kwargs={'username': self.author_to_be_followed.username}
+            )
         )
+        subscription = Follow.objects.filter(
+            user=self.follower, author=self.author_to_be_followed
+        )
+        self.assertEqual(subscription.count(), 1)
+
+        self.authorized_follower.get(
+            reverse(
+                'profile_follow',
+                kwargs={'username': self.author_to_be_followed.username}
+            )
+        )
+        subscription = Follow.objects.filter(
+            user=self.follower, author=self.author_to_be_followed
+        )
+
+        self.assertEqual(subscription.count(), 1)
+
+    def test_unfollowing_successful(self):
+        subscription = Follow.objects.filter(
+            user=self.follower, author=self.author_to_be_followed
+        )
+        self.assertEqual(subscription.count(), 0)
+
+        self.authorized_follower.get(
+            reverse(
+                'profile_follow',
+                kwargs={'username': self.author_to_be_followed.username}
+            )
+        )
+        subscription = Follow.objects.filter(
+            user=self.follower, author=self.author_to_be_followed
+        )
+        self.assertEqual(subscription.count(), 1)
 
         Follow.objects.filter(
             user=self.follower, author=self.author_to_be_followed
         ).delete()
-        self.assertEqual(
-            None, self.author_to_be_followed.following.first()
+        subscription = Follow.objects.filter(
+            user=self.follower, author=self.author_to_be_followed
         )
+        self.assertEqual(subscription.count(), 0)
 
     def test_posts_are_followed_correctly(self):
-
         Follow.objects.create(
             user=self.follower, author=self.author_to_be_followed
         )
 
         response = self.authorized_follower.get(reverse('follow_index'))
-        posts_followed_by_follower = response.context['page']
+        posts_followed_by_follower = response.context['page_obj']
         self.assertIn(self.post, posts_followed_by_follower)
 
         response = self.authorized_not_a_follower.get(reverse('follow_index'))
-        posts_followed_by_not_a_follower = response.context['page']
+        posts_followed_by_not_a_follower = response.context['page_obj']
         self.assertNotEqual(self.post, posts_followed_by_not_a_follower)

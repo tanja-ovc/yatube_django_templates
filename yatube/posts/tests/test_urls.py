@@ -42,6 +42,7 @@ class URLsTest(TestCase):
             '/': HTTPStatus.OK,
             f'/group/{self.group.slug}/': HTTPStatus.OK,
             f'/profile/{self.post_author.username}/': HTTPStatus.OK,
+            f'/posts/{self.post.id}/': HTTPStatus.OK,
         }
         for (url, status_code) in urls_and_expected_status_codes.items():
             with self.subTest(url=url):
@@ -51,7 +52,6 @@ class URLsTest(TestCase):
     def test_page_available_for_auth_user(self):
         urls_and_expected_status_codes = {
             '/create/': HTTPStatus.OK,
-            f'/posts/{self.post.id}/': HTTPStatus.OK,
         }
         for (url, status_code) in urls_and_expected_status_codes.items():
             with self.subTest(url=url):

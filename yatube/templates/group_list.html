@@ -6,7 +6,6 @@
     <p>
       {{ group.description }}
     </p> -->
-    <br>
   {% for post in page_obj %}
     <h4>
       Автор: {{ post.author.get_full_name }}, дата публикации: {{ post.pub_date|date:"d M Y" }}
