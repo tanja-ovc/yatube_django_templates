@@ -26,7 +26,8 @@ class StrModelTest(TestCase):
     def test_str_post(self):
         """Проверка работы метода __str__ модели Post."""
         post_str = str(StrModelTest.post)
-        expected_output = StrModelTest.post.text[:15]
+        post_text_trunc = StrModelTest.post.text[:15]
+        expected_output = f'{post_text_trunc}...'
         self.assertEqual(post_str, expected_output,
                          'Метод __str__ модели Post работает неправильно')
 

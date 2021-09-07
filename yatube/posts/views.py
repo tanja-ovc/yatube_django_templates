@@ -12,7 +12,7 @@ User = get_user_model()
 
 
 def index(request):
-    posts_list = Post.objects.all()
+    posts_list = Post.objects.select_related('group').all()
     paginator = Paginator(posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -32,8 +32,28 @@ def group_posts(request, slug):
                   {'group': group, 'page_obj': page_obj})
 
 
+def add_context_to_post_and_profile(request, a_user, context):
+
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=a_user
+        ).exists()
+        authenticated_user = True
+
+        context['following'] = following
+        context['authenticated_user'] = authenticated_user
+
+    if request.user == a_user:
+        self_following = True
+        editing_permitted = True
+
+        context['self_following'] = self_following
+        context['editing_permitted'] = editing_permitted
+
+
 def profile(request, username):
     a_user = get_object_or_404(User, username=username)
+
     a_users_posts = a_user.posts.all()
     paginator = Paginator(a_users_posts, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
@@ -45,30 +65,18 @@ def profile(request, username):
         'profile_view': True,
     }
 
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=a_user
-        ).exists()
-        authenticated_user = True
-
-        context['following'] = following
-        context['authenticated_user'] = authenticated_user
-
-    if request.user.username == username:
-        self_following = True
-        editing_permitted = True
-
-        context['self_following'] = self_following
-        context['editing_permitted'] = editing_permitted
+    add_context_to_post_and_profile(request, a_user, context)
 
     return render(request, 'profile.html', context)
 
 
 def post_view(request, post_id):
     a_post = get_object_or_404(Post, id=post_id)
+    a_user = a_post.author
+
     form = CommentForm()
     comments = a_post.comments.all()
-    a_user = a_post.author
+
     context = {
         'a_post': a_post,
         'post_view': True,
@@ -78,21 +86,7 @@ def post_view(request, post_id):
         'a_user': a_user,
     }
 
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=a_user
-        ).exists()
-        authenticated_user = True
-
-        context['following'] = following
-        context['authenticated_user'] = authenticated_user
-
-    if request.user.username == a_post.author.username:
-        self_following = True
-        editing_permitted = True
-
-        context['self_following'] = self_following
-        context['editing_permitted'] = editing_permitted
+    add_context_to_post_and_profile(request, a_user, context)
 
     return render(request, 'post.html', context)
 
@@ -177,7 +171,6 @@ def profile_follow(request, username):
         Follow.objects.get_or_create(
             user=request.user, author=author_to_be_followed
         )
-        return redirect('profile', username=username)
 
     return redirect('profile', username=username)
 

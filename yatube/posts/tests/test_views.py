@@ -481,9 +481,12 @@ class TestFollow(TestCase):
         )
         self.assertEqual(subscription.count(), 1)
 
-        Follow.objects.filter(
-            user=self.follower, author=self.author_to_be_followed
-        ).delete()
+        self.authorized_follower.get(
+            reverse(
+                'profile_unfollow',
+                kwargs={'username': self.author_to_be_followed.username}
+            )
+        )
         subscription = Follow.objects.filter(
             user=self.follower, author=self.author_to_be_followed
         )
