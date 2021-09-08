@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post
+from .utils import add_context_to_post_and_profile
 
 User = get_user_model()
 
@@ -30,25 +31,6 @@ def group_posts(request, slug):
     return render(request,
                   'group_list.html',
                   {'group': group, 'page_obj': page_obj})
-
-
-def add_context_to_post_and_profile(request, a_user, context):
-
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=a_user
-        ).exists()
-        authenticated_user = True
-
-        context['following'] = following
-        context['authenticated_user'] = authenticated_user
-
-    if request.user == a_user:
-        self_following = True
-        editing_permitted = True
-
-        context['self_following'] = self_following
-        context['editing_permitted'] = editing_permitted
 
 
 def profile(request, username):
