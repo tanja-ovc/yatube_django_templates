@@ -1,4 +1,6 @@
-# Yatube 05
-## Проект 6-го спринта (блок Django)
+# Yatube
+## Социальная сеть/блог/онлайн-дневник
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+Социальная сеть "Yatube" даёт пользователям возможность публиковать записи в свой блог, подписываться на любимых авторов и добавлять понравившиеся записи в избранное.
+
+_Автор: Татьяна Овчинникова_
