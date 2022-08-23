@@ -45,7 +45,7 @@ Cоздайте виртуальное окружение:
 
 ```python3 manage.py migrate```
 
-Запустить проект:
+Запустите проект:
 
 ```python3 manage.py runserver```
 
