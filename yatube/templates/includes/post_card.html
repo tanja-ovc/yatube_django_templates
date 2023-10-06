@@ -1,50 +1,76 @@
+<head>
+  <style>
+  .username-post-card,
+  .group-name-post-card {
+    color: teal;
+    text-decoration: none;
+  }
+  .group-name-post-card:hover,
+  .username-post-card:hover {
+    color: maroon
+  }
+  </style>
+</head>
+
 <div class="card mb-3 mt-1 shadow-sm">
     <div class="card-body">
       <p class="card-text">
-        <!-- Ссылка на страницу автора в атрибуте href; username автора в тексте ссылки -->
-        <a href="{% url 'profile' a_post.author.username %}">
-          <strong class="d-block text-gray-dark">
+        <a class="username-post-card"
+           href="{% url 'posts:profile' a_post.author.username %}">
+          <h5 class="d-block">
+            {% if a_post.author.get_full_name %}
+            {{ a_post.author.get_full_name }}
+          {% else %}
             @{{ a_post.author.username }}
-          </strong>   
+          {% endif %}
+          </h5>
         </a>
+        <p>
+          <small class="text-muted">
+          {{ a_post.pub_date|date:"d b Y" }} в {{ a_post.pub_date|date:"G:i" }}
+          {% if a_post.group %}
+          в сообществе 
+          <a class="group-name-post-card"
+            href="{% url 'posts:group_posts' a_post.group.slug %}">
+              {{ a_post.group }}
+          </a>
+          {% endif %}
+        </small>
+      </p>
         {% load thumbnail %}
         {% thumbnail a_post.image "960x339" crop="center" upscale=True as im %}
         <img class="card-img my-2" src="{{ im.url }}">
         {% endthumbnail %}
-        <!-- Текст поста -->
         {{ a_post.text }}
       </p>
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group ">
 
           <a class="btn btn-sm text-muted"
-             href="{% url 'post' a_post.id %}"
+             href="{% url 'posts:post' a_post.id %}"
              role="button">
             Посмотреть пост
           </a>
 
           {% if authenticated_user %}
           <a class="btn btn-sm text-muted" 
-             href="{%  url 'post' a_post.id %}" 
+             href="{%  url 'posts:post' a_post.id %}" 
              role="button">
             Добавить комментарий
           </a>
           {% endif %}
 
-          <!-- Ссылка на редактирование, показывается только автору записи.
-            Эту ссылку вы подключите в финальном задании спринта -->
           {% if editing_permitted %}
           <a class="btn btn-sm text-muted"
-             href="{% url 'post_edit' a_post.id %}"
+             href="{% url 'posts:post_edit' a_post.id %}"
              role="button">
             Редактировать
           </a>
           {% endif %}
           
         </div>
-        <!-- Дата публикации  -->
         <small class="text-muted">
-          {{ a_post.pub_date.date }}
+          {% comment %} здесь что-то в правом нижнем углу {% endcomment %}
         </small>
       </div>
     </div>

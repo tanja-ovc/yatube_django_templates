@@ -1,10 +1,22 @@
+<head>
+  <style>
+  .nav-link {
+    color: teal
+  }
+  .nav-link:hover {
+    background-color: teal;
+    color: white
+  }
+  </style>
+</head>
+
 {% if user.is_authenticated %}
   <div class="row my-3">
     <ul class="nav nav-tabs">
       <li class="nav-item">
         <a 
           class="nav-link {% if index %}active{% endif %}"
-          href="{% url 'index' %}"
+          href="{% url 'posts:index' %}"
         >
           Все авторы
         </a>
@@ -12,7 +24,7 @@
       <li class="nav-item">
         <a 
            class="nav-link {% if follow %}active{% endif %}"
-           href="{% url 'follow_index' %}"
+           href="{% url 'posts:follow_index' %}"
         >
           Избранные авторы
         </a>

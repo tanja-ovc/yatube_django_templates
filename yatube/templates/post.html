@@ -1,3 +1,19 @@
+<head>
+  <style>
+    .username-in-comment {
+      color: cadetblue;
+      text-decoration: none;
+    }
+    .username-in-comment:hover {
+      color: indianred;
+      text-decoration: none;
+    }
+    .editing-comment {
+      float: right
+    }
+  </style>
+</head>
+
 {% extends "base.html" %}
 {% block content %}
   <main role="main" class="container">
@@ -6,8 +22,80 @@
         {% include 'includes/author_card.html' %}
       </div>
       <div class="col-md-9">
-      <!-- Пост -->
         {% include 'includes/post_card.html' %}
+
+        {% if comments.count != 0 %}
+        <div class="card mb-3 mt-1 shadow-sm">
+          <div class="card-body">
+            <p class="card-text">
+              <span style="color: gray">Комментарии:<span><hr>
+          {% for comment in comments %}
+            <div class="media mb-4">
+              <div class="media-body">
+                <h5 class="mt-0">
+                  <a class="username-in-comment"
+                     href="{% url 'posts:profile' comment.author.username %}">
+                     {% if comment.author.get_full_name %}
+                       {{ comment.author.get_full_name }}
+                     {% else %}
+                       @{{ comment.author.username }}
+                     {% endif %} 
+                  </a>
+                </h5>
+                <p>
+                  <small class="text-muted">
+                  {{ comment.created|date:"d b Y" }} в {{ comment.created|date:"G:i" }}
+                </small>
+              </p>
+                  <p>
+                   {{ comment.text }}
+                  </p>
+              
+                  <div class="d-flex justify-content-between align-items-center editing-comment">
+                    <div class="btn-group ">
+                      {% if editing_permitted %}
+                      <a class="btn btn-sm text-muted"
+                         href=""
+                         role="button">
+                        Редактировать
+                      </a>
+        
+                      <a class="btn btn-sm text-muted" 
+                         href="" 
+                         role="button">
+                        Удалить
+                      </a>
+                      {% endif %}
+                      
+                    </div>
+                    <small class="text-muted">
+                      {% comment %} здесь что-то в правом нижнем углу {% endcomment %}
+                    </small>
+                  </div>
+
+
+              {% comment %} {% if editing_permitted%}
+                <p>
+                  <div class="edit-comment">
+                  <small class="text-muted">
+                  Редактировать
+                </small>
+              </div>
+              <div class="edit-comment">
+                <small class="text-muted">
+                Удалить
+              </small>
+            </div>
+            </p>
+                {% endif %} {% endcomment %}
+                  
+                </div>
+              </div>
+              {% if not forloop.last %}<br><hr>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
 
         {% if authenticated_user %}
           {% include 'includes/add_comment_card.html' %}

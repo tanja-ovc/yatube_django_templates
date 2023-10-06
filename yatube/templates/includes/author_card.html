@@ -1,15 +1,41 @@
+<head>
+  <style>
+    .username-still {
+      color: teal
+    }
+    .unsubscribe-button {
+      color: black;
+      background-color: #d9d9d9;
+      border-color: #d9d9d9
+    }
+    .unsubscribe-button:hover {
+      color: black;
+      background-color: #f2f2f2;
+      border-color: #f2f2f2
+    }
+    .subscribe-button {
+      color: white;
+      background-color: teal;
+      border-color: teal
+    }
+    .subscribe-button:hover {
+      color: white;
+      background-color: cadetblue;
+      border-color: cadetblue
+    }
+  </style>
+</head>
+
 <div class="card">
     <div class="card-body">
-      <div class="h2">
-        <!-- Имя автора -->
+      <div class="h3">
         {% if post_view %}
           {{ a_post.author.get_full_name }}
         {% elif profile_view %}
           {{ a_user.get_full_name }}
         {% endif %}
       </div>
-      <div class="h3 text-muted">
-        <!-- username автора -->
+      <div class="h4 username-still">
         {% if post_view %}
           @{{ a_post.author.username }}
         {% elif profile_view %}
@@ -25,7 +51,7 @@
                        {% elif profile_view %}
                          {{ a_user.following.count }}
                        {% endif %}<br>
-          Подписан: {% if post_view %}
+          Подписан на: {% if post_view %}
                       {{ a_post.author.follower.count }}
                     {% elif profile_view %}
                       {{ a_user.follower.count }}
@@ -34,27 +60,26 @@
       </li>
       <li class="list-group-item">
         <div class="h6 text-muted">
-          <!--Количество записей -->
           Записей:
           {% if post_view %}
             {{ a_post.author.posts.count }}
           {% elif profile_view %}
             {{ a_user.posts.count }}
           {% endif %}
-
+          
           {% if following %}
-            <a class="btn btn-lg btn-light"
-             href="{% url 'profile_unfollow' a_user.username %}" role="button"
-             >
+            <br><br>
+            <a class="btn btn-md btn-light unsubscribe-button"
+             href="{% url 'posts:profile_unfollow' a_user.username %}" role="button">
               Отписаться
             </a>
           {% elif self_following %}
 
           {% else %}
+          <br><br>
           <a
-           class="btn btn-lg btn-primary"
-           href="{% url 'profile_follow' a_user.username %}" role="button"
-           >
+           class="btn btn-md btn-primary subscribe-button"
+           href="{% url 'posts:profile_follow' a_user.username %}" role="button">
             Подписаться
           </a>
           {% endif %}

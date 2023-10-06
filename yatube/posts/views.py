@@ -13,7 +13,9 @@ User = get_user_model()
 
 
 def index(request):
-    posts_list = Post.objects.select_related('group').all()
+    posts_list = Post.objects.prefetch_related(
+        'author', 'group', 'comments'
+    ).all()
     paginator = Paginator(posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -23,7 +25,9 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    group_posts_list = group.posts.all()
+    group_posts_list = group.posts.prefetch_related(
+        'author', 'comments'
+    ).all()
     paginator = Paginator(group_posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -82,7 +86,7 @@ def new_post(request):
             a_new_post = form.save(commit=False)
             a_new_post.author = request.user
             a_new_post.save()
-            return redirect('profile', username=request.user.username)
+            return redirect('posts:profile', username=request.user.username)
 
         return render(request, 'new_post.html', {'form': form})
 
@@ -96,7 +100,7 @@ def post_edit(request, post_id):
     post_to_be_edited = get_object_or_404(Post, id=post_id)
 
     if request.user != post_to_be_edited.author:
-        return redirect('post', post_id=post_id)
+        return redirect('posts:post', post_id=post_id)
 
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
@@ -104,7 +108,7 @@ def post_edit(request, post_id):
 
     if form.is_valid():
         form.save()
-        return redirect('post', post_id=post_id)
+        return redirect('posts:post', post_id=post_id)
 
     return render(
         request,
@@ -127,14 +131,14 @@ def add_comment(request, post_id):
         comment.post = post_to_be_commented
         comment.save()
 
-    return redirect('post', post_id=post_id)
+    return redirect('posts:post', post_id=post_id)
 
 
 @login_required
 def follow_index(request):
     followed_posts_list = Post.objects.filter(
         author__following__user=request.user
-    )
+    ).prefetch_related('author', 'group', 'comments')
     paginator = Paginator(followed_posts_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -154,7 +158,7 @@ def profile_follow(request, username):
             user=request.user, author=author_to_be_followed
         )
 
-    return redirect('profile', username=username)
+    return redirect('posts:profile', username=username)
 
 
 @login_required
@@ -162,4 +166,4 @@ def profile_unfollow(request, username):
     followed_author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=followed_author).delete()
 
-    return redirect('profile', username=username)
+    return redirect('posts:profile', username=username)

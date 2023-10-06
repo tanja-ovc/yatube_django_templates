@@ -6,12 +6,9 @@
         {% include 'includes/author_card.html' %}
       </div>
       <div class="col-md-9">
-        <!-- Остальные посты -->
         {% for a_post in page_obj %}
           {% include 'includes/post_card.html' %}
-        <hr>  
         {% endfor %}
-        <!-- Здесь постраничная навигация паджинатора -->
         {% include "includes/paginator.html" %}
       </div>
     </div>

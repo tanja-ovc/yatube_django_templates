@@ -1,0 +1,98 @@
+<head>
+  <style>
+    .date-and-time-link-to-post {
+      text-decoration: none;
+    }
+    .post-text-as-link {
+      text-decoration: none;
+      color: black
+    }
+    .post-text-as-link:hover {
+      text-decoration: none;
+      color: black
+    }
+  .comments-link,
+  .post-link,
+  .username-posts-list,
+  .group-name-posts-list {
+    text-decoration: none;
+    color: teal
+  }
+  .comments-link:hover,
+  .post-link:hover,
+  .username-posts-list:hover,
+  .group-name-posts-list:hover {
+    color: maroon
+  }
+  .open-post {
+    float: right
+  }
+  </style>
+</head>
+
+{% for post in page_obj %}
+  <div class="card mb-3 mt-1 shadow-sm">
+    <div class="card-body">
+      <a class="username-posts-list" href="{%  url 'posts:profile' post.author.username %}">
+        <h5>
+          {% if post.author.get_full_name %}
+            {{ post.author.get_full_name }}
+          {% else %}
+            @{{ post.author.username }}
+          {% endif %}
+        </h5>
+      </a>
+      <p>
+        <small class="text-muted">
+          <a class="date-and-time-link-to-post text-muted" href="{%  url 'posts:post' post.id %}">
+        {{ post.pub_date|date:"d b Y" }} в {{ post.pub_date|date:"G:i" }}</a>
+        {% if post.group %}
+        в сообществе 
+        <a class="group-name-posts-list"
+          href="{% url 'posts:group_posts' post.group.slug %}">
+            {{ post.group }}
+        </a>
+        {% endif %}
+      </small>
+    </p>
+
+      {% load thumbnail %}
+        {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+        <a href="{%  url 'posts:post' post.id %}">
+          <img class="card-img my-2" src="{{ im.url }}">
+        </a>
+      {% endthumbnail %}
+
+      <p class="card-text">
+        <a class="post-text-as-link"
+           href="{%  url 'posts:post' post.id %}">
+            {{ post.text|linebreaksbr }}
+        </a>
+      </p>
+      
+      <div>
+        {% if post.comments.count != 0 %}
+          <a class="comments-link"
+             href="{%  url 'posts:post' post.id %}">
+              <small> Комментарии: {{ post.comments.count }}</small>
+          </a>
+        {% else %}
+          <small>Комментариев пока нет.
+            <a class="comments-link"
+               href="{%  url 'posts:add_comment' post.id %}">
+              Напишите первый!
+            </a>
+          </small>
+        {% endif %}
+      <small class="text-muted open-post">
+        <a class="post-link"
+               href="{%  url 'posts:post' post.id %}">
+        Развернуть пост
+      </a>
+      </small>
+      </div>
+      
+    </div>
+    
+  </div>
+{% endfor %}

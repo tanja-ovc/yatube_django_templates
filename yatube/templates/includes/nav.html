@@ -1,17 +1,46 @@
-<nav class="navbar navbar-light" style="background-color: #cce9d7;">
+<head>
+  <style>
+    .navbar {
+      background-color: #daf1ef;
+    }
+    .navbar-brand {
+      font-size: 19px;
+    }
+    .topnav a {
+      color: black;
+      text-decoration: none;
+      font-size: 17px;
+    }
+    .topnav a:hover {
+      color: white;
+      background-color: cadetblue;
+    }
+  </style>
+</head>
+ 
+<nav class="navbar navbar-light sticky-top">
+  <div class="container">
   {% load static %}
-  <a class="navbar-brand" href="{% url 'index' %}">
-    <img src="{% static 'img/favicon-32x32.png' %}">
-    <span style="color:rgb(22, 94, 84)">Ya</span>tube</a>
-    <nav class="my-2 my-md-0 mr-md-3">
+    <a class="navbar-brand" href="{% url 'posts:index' %}">
+      <img src="{% static 'img/favicon-32x32.png' %}" width=32>
+      <span style="color:teal">Ya</span>tube
+    </a>
+    <nav class="topnav my-2 my-md-0 mr-md-3">
       {% if user.is_authenticated %}
-        Пользователь: {{ user.username }}
-        <a class="p-2 text-dark" href="{% url 'new_post' %}">Новая запись</a>
-        <a class="p-2 text-dark" href="{% url 'password_change' %}">Изменить пароль</a>
-        <a class="p-2 text-dark" href="{% url 'logout' %}">Выйти</a>
+      <ul class="nav nav-pills justify-content-end">
+        <li><a class="p-2" href="{% url 'posts:profile' user.username %}"> 
+          Мой профиль: @{{ user.username }}
+        </a></li>
+        <li><a class="p-2" href="{% url 'posts:new_post' %}">Новая запись</a></li>
+        <li><a class="p-2" href="{% url 'password_change' %}">Изменить пароль</a></li>
+        <li><a class="p-2" href="{% url 'logout' %}">Выйти</a></li>
+      </ul>
       {% else %}
-        <a class="p-2 text-dark" href="{% url 'login' %}">Войти</a> |
-        <a class="p-2 text-dark" href="{% url 'signup' %}">Регистрация</a>
+      <ul class="nav nav-pills justify-content-end">
+        <li><a class="p-2" href="{% url 'login' %}">Войти</a></li>
+        <li><a class="p-2" href="{% url 'signup' %}">Регистрация</a></li>
+      </ul>
       {% endif %}
     </nav>
-  </nav>
+  </div>
+</nav>
